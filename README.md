@@ -4,7 +4,7 @@ https://roadmap.sh/projects/ecommerce-api
 
 
 A RESTful e-commerce backend built with Django and Django REST Framework following a monolithic architecture  
-The API provides user authentication, product catalog browsing, shopping cart management adn administrative product management functionality.
+The API provides user authentication, product catalog browsing, shopping cart management and administrative product management functionality.
 
 ## Features
 ### Authentication
