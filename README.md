@@ -2,37 +2,180 @@
 
 https://roadmap.sh/projects/ecommerce-api
 
-I used mainly Django Rest Framework and Sqlite3 for this project
 
-If you want to test it you will need to clone this repo and install the requirements bash: pip install -r requirements.txt
-Also you may need to start a Stripe account in order to get the api key. After you have created your account, get your stripe api key and set it in a .env file in the same level as the manage.py file <p> STRIPE_SECRET_KEY = 'your actual secret key' </p>
+A RESTful e-commerce backend built with Django and Django REST Framework following a monolithic architecture  
+The API provides user authentication, product catalog browsing, shopping cart management adn administrative product management functionality.
+
+## Features
+### Authentication
+- User registration
+- User login
+- User logout
+- Account deletion
+- JWT-based authentication
+
+### Products
+- Browse product catalog
+- Retrieve individual product details
+- Filter products by category
+- Search products by key words
+
+### Cart
+- Add products to cart
+- Update cart quantities
+- Remove products from cart
+- View current cart contents
+
+### Admin
+- Create products
+- Update products
+- Delete products
+- Create categories
+- Manage catalog data
+
+## Architecture
+This project follows a monolithic architecture where all functionality is contained within a single Django application and all modules share the same database, application and business logic.
+
+### Modules
+- Auth
+- Products
+- Cart
+- Admin
+
+## Tech stack
+- Python
+- Django
+- Django REST Framework
+- SQLite3
+- JWT Authentication
+- Stripe (Payments)
+
+## Installation
+Clone the repository:  
+> bash: git clone https://github.com/Alexx720p/ecommerce_api
+
+Navigate to the project directory:  
+>bash: cd ecommerce_api
+
+Create a virtual environment and activate it:  
+> bash: python -m venv venv_name
+
+Install dependencies:  
+> bash: pip install -r requirements.txt
+
+Apply migrations:  
+> bash: python manage.py migrate
+
+Run the server:  
+> bash: python manage.py runserver
+
+### Environmente variables
+Create a .env file in the project root with your Stripe API key:  
+`SECRET_KEY = 'your_actual_Stripe_key'`  
+
+# API Documentation
+## Authentication
+### Register User  
+> HTTP `POST register/`
+  
+Request:  
+> JSON `{"username": "John", "email": "johndoe@email.com", "password": "securepassword"}`    
+
+Response:  
+> JSON `{"username": "john"}`  
+
+Status codes:  
+- 201 Created
+- 400 Bad Request
+
+### Login   
+> HTTP `POST /login/`
+Request:
+> JSON `{"username": "john", "password": "securepassword"}`
+
+Response:  
+> JSON `{"refresh": "refresh_jwt", "access": "access_jwt"}`
+
+Status codes:  
+- 200 Ok
+- 401 Unauthorized
+
+### Logout  
+> HTTP `POST /logout/`  
+
+Authorization required  
+Request:  
+> Bearer `<token>`  
+> JSON `{"refresh": "refresh_jwt"}`  
+
+Response:  
+> JSON `{"message": "Logged out successfully"}`  
+
+Status codes:  
+- 200 Ok
+- 400 Bad Request
+- 401 Unauthorized
+
+## Products
+### Search one product
+> HTTP `/products/?search=hat`
+### Get all products
+> HTTP `GET /products`
+
+Response:  
+> JSON `{"count": 1, "next": "null", "previous": "null", "results": [{"id": 1, "title": "hat", "description": "Black hat for men", "price": 3.99, "Category": 1}]}`
+
+You can filter by Category too using the category's id:  
+> HTTP `/products/?Category=1`  
+
+Status codes:  
+- 200 ok
+- 400 Bad Request
+
+## Cart
+### View cart
+Authentication required    
+Request:    
+> HTTP GET `/cart`  
+> Bearer `<token>`
+
+Response:    
+> JSON `{"count":0,"next":null,"previous":null,"results":[]}`  
+
+Status codes:  
+- 200 Ok
+- 401 Unauthorized
+
+### Add product to cart
+> HTTP POST `/add/product_id/`
+Authentication required:
+> Bearer `<access_token>`
+
+Response:  
+> JSON `[{"product":{"id":2,"title":"T shirt women","description":"T shirt for women L size","price":"14.99","Category":2},"quantity":1,"added_at":"2026-11-06T04:29:07.499647Z"}]`
+
+Status codes:  
+- 200 Ok
+- 402 Unauthorized
+
+### Update cart item
+> HTTP PATCH `/rest/product_id/`  
+
+Status codes:  
+- 200 Ok
+- 401 Unauthorized
+
+### Remove product from cart
+Authentication required  
+> HTTP DELETE `/remove/product_id/`
+> Bearer `<access_token>`
+
+Response:  
+> JSON `{"message":"Product removed from cart","cart":[]}`
+
+Status codes:  
+- 200 Ok
+- 401 Unauthorized
 
 
-# Commands:
-## Products:
-- See all products: GET /products
-- Search products: GET /products?search=*key word in the title*
-- Filter products by category: GET /products/Category=*category_id*
 
-## Admin panel:
-Is very similar to the products one but in this one you can modify, delete and add products and categories
-- See all products: GET /admin-products
-- Add a new product: send a POST request to this url /admin-products/  and a JSON with a title, description, price, inventory and the category id. E.g. <p>{'title': 't-shirt',  'description': 't-shirt size m for men', 'price': 14.99, Category': 3}</p>
-- Update a product: PATCH /admin-products/*product_id*/ and a JSON with the attribute you want to modify. Eg: <p>{'title': 'T-shirt men'}</p>
-- Delete a product: DELETE  /admin-products/*product_id*/
-
-
-## Auth:
-I used JWT for authentication, the core main functions are register, login, logout and delete the account:
-- Register: POST /register/ JSON: <p>{"username": "your_username", "password": "your_password"}</p>
-- Login: POST /login/ JSON: <p>{"username": "your_username", "password": "your_password"}</p>
-- Logout: POST /logout/ JSON: <p>{"username": "your_username", "password": "your_password", "refresh": "the_refresh_token"}</p>
-- Delete your user: DELETE /delete/ (needs authentication)
-
-## Cart (needs authentication):
-- See the cart: GET /cart
-- Add a product to the cart: POST /add/*productid*/
-- Rest from the cart: PATCH /rest/*product_id*/
-- Delete all pieces of one product in the cart: DELETE /remove/*product_id*/
-- Clear the cart: DELETE /clear/
-- Checkout: POST /checkout/
