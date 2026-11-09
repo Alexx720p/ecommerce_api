@@ -4,7 +4,7 @@ https://roadmap.sh/projects/ecommerce-api
 
 
 A RESTful e-commerce backend built with Django and Django REST Framework following a monolithic architecture  
-The API provides user authentication, product catalog browsing, shopping cart management and administrative product management functionality.
+The API provides user authentication, product catalog browsing, shopping cart management and product administration features.
 
 ## Features
 ### Authentication
@@ -18,7 +18,7 @@ The API provides user authentication, product catalog browsing, shopping cart ma
 - Browse product catalog
 - Retrieve individual product details
 - Filter products by category
-- Search products by key words
+- Search products by keywords
 
 ### Cart
 - Add products to cart
@@ -34,7 +34,7 @@ The API provides user authentication, product catalog browsing, shopping cart ma
 - Manage catalog data
 
 ## Architecture
-This project follows a monolithic architecture where all functionality is contained within a single Django application and all modules share the same database, application and business logic.
+This project follows a monolithic architecture where all functionality is contained within a single Django application and all modules share the same database, business logic and application layer.
 
 ### Modules
 - Auth
@@ -69,14 +69,16 @@ Apply migrations:
 Run the server:  
 > bash: python manage.py runserver
 
-### Environmente variables
+### Environment variables
 Create a .env file in the project root with your Stripe API key:  
-`SECRET_KEY = 'your_actual_Stripe_key'`  
+`STRIPE_SECRET_KEY = 'your_actual_Stripe_key'`  
 
 # API Documentation
 ## Authentication
+Logout and delete requires authentication:  
+> Bearer `<access_token>`   
 ### Register User  
-> HTTP `POST register/`
+> HTTP `POST register/`  
   
 Request:  
 > JSON `{"username": "John", "email": "johndoe@email.com", "password": "securepassword"}`    
@@ -89,35 +91,57 @@ Status codes:
 - 400 Bad Request
 
 ### Login   
-> HTTP `POST /login/`
-Request:
-> JSON `{"username": "john", "password": "securepassword"}`
+> HTTP `POST /login/`  
+
+Request:  
+> JSON `{"username": "john", "password": "securepassword"}`  
 
 Response:  
-> JSON `{"refresh": "refresh_jwt", "access": "access_jwt"}`
+> JSON `{"refresh": "refresh_jwt", "access": "access_jwt"}`  
 
 Status codes:  
-- 200 Ok
+- 200 OK
 - 401 Unauthorized
 
 ### Logout  
 > HTTP `POST /logout/`  
 
-Authorization required  
 Request:  
-> Bearer `<token>`  
-> JSON `{"refresh": "refresh_jwt"}`  
+> JSON `{"refresh": "refresh_jwt"}`   
 
 Response:  
 > JSON `{"message": "Logged out successfully"}`  
 
 Status codes:  
-- 200 Ok
+- 200 OK
 - 400 Bad Request
 - 401 Unauthorized
 
+### Refresh
+Request:  
+> HTTP POST `/refresh/`
+> JSON `{"refresh": "refresh_token"}`  
+
+Response:  
+> JSON `{"access": "access_jwt", "refresh": "refresh_jwt"}`
+
+Status codes:
+- 200 OK
+- 401 Unauthorized
+
+### Delete account
+Request:  
+> HTTP DELETE `/delete/`
+
+Response:  
+> JSON `{"detail":"User deleted successfully"}`  
+
+Status codes:  
+- 200 OK
+- 401 Unauthorized
+
 ## Products
-### Search one product
+### Search Products
 > HTTP `/products/?search=hat`
 ### Get all products
 > HTTP `GET /products`
@@ -129,73 +153,69 @@ You can filter by Category too using the category's id:
 > HTTP `/products/?Category=1`  
 
 Status codes:  
-- 200 ok
+- 200 OK
 - 400 Bad Request
 
 ## Cart
+**Authentication required in all views:**  
+> Bearer `<access_token>`  
 ### View cart
-Authentication required    
 Request:    
 > HTTP GET `/cart`  
-> Bearer `<token>`
 
 Response:    
 > JSON `{"count":0,"next":null,"previous":null,"results":[]}`  
 
 Status codes:  
-- 200 Ok
+- 200 OK
 - 401 Unauthorized
 
 ### Add product to cart
-> HTTP POST `/add/product_id/`
-Authentication required:
-> Bearer `<access_token>`
+> HTTP POST `/add/product_id/`  
 
 Response:  
-> JSON `[{"product":{"id":2,"title":"T shirt women","description":"T shirt for women L size","price":"14.99","Category":2},"quantity":1,"added_at":"2026-11-06T04:29:07.499647Z"}]`
+> JSON `[{"product":{"id":2,"title":"T shirt women","description":"T shirt for women L size","price":"14.99","Category":2},"quantity":1,"added_at":"2026-11-06T04:29:07.499647Z"}]`  
 
 Status codes:  
-- 200 Ok
-- 402 Unauthorized
+- 200 OK
+- 401 Unauthorized
 
 ### Update cart item
 > HTTP PATCH `/rest/product_id/`  
 
 Status codes:  
-- 200 Ok
+- 200 OK
 - 401 Unauthorized
 
 ### Remove product from cart
-Authentication required  
-> HTTP DELETE `/remove/product_id/`
-> Bearer `<access_token>`
+> HTTP DELETE `/remove/product_id/`  
 
 Response:  
-> JSON `{"message":"Product removed from cart","cart":[]}`
+> JSON `{"message":"Product removed from cart","cart":[]}`  
 
 Status codes:  
-- 200 Ok
+- 200 OK
 - 401 Unauthorized
 
 
 ## Admin
-**Requires authentication and admin permissions**  
+**Requires authentication and admin permissions:**  
+> Authorization bearer `<admin_access_token>`  
 
 ### Get all products
-> HTTP GET `/admin-products`
-> Bearer `<admin_access_token>`
+> HTTP GET `/admin-products`  
 
 Response:  
 > JSON `{"count": 1, "next": "null", "previous": "null", "results": [{"id": 1, "title": "hat", "description": "Black hat for men", "price": 3.99, "Category": 1}]}`  
 
 Status codes:
-- 200 Ok
+- 200 OK
 - 401 Unauthorized
 - 403 Forbidden    
 
 ### Create a product
-> HTTP POST `/admin-products/`
-> Bearer `<admin_access_token>`  
+> HTTP POST `/admin-products/`  
+
 Request:  
 > JSON: "{"title": "Hoodie", "description": "Hoodie for woman, Large size", "price": 4.99, "inventory": 3, "Category": 2}"   
 
@@ -203,14 +223,13 @@ Response:
 > JSON `{"id":7,"title":"Hoodie","description":"Hoodie for woman, Large size","price":"4.99","inventory":3,"created":"2026-11-06T07:04:08.394951Z","updated":"2026-11-06T07:04:08.394951Z","Category":2}`
 
 Status codes:
-- 201 Ok
+- 201 Created
 - 400 Bad Request
 - 401 Unauthorized
 - 403 Forbidden  
 
 ### Update product
-> HTTP PATCH `/admin-products/product_id/`  
-> Bearer `<admin_access_token>`  
+> HTTP PATCH `/admin-products/product_id/`   
 
 Request:  
 > JSON: `{"price": 5.99}`  
@@ -219,15 +238,14 @@ Response:
 > JSON `{"id":7,"title":"Hoodie","description":"Hoodie for woman, Large size","price":"5.99","inventory":3,"created":"2026-11-06T07:04:08.394951Z","updated":"2026-11-06T07:11:01.940312Z","Category":2}`
 
 Status codes:
-- 201 Ok
+- 201 OK
 - 400 Bad Request
 - 401 Unauthorized
 - 403 Forbidden
 - 404 Not Found  
 
 ### Delete Product
-> HTTP DELETE `/admin-products/product_id/`
-> Bearer `<admin_access_token>`
+> HTTP DELETE `/admin-products/product_id/`  
 
 Response:  
   None  
@@ -240,28 +258,26 @@ Status codes:
 
 ### Get all categories
 > HTTP GET `/admin-categories`  
-> Bearer `<admin_access_token>`  
 
 Response:  
 > JSON `{"count":3,"next":null,"previous":null,"results":[{"id":1,"name":"Men","slug":"men"},{"id":2,"name":"Women","slug":"women"},{"id":3,"name":"Kids","slug":"kids"}]}`  
 
 Status codes:
-- 200 Ok
+- 200 OK
 - 401 Unauthorized
 - 403 Forbidden
 
 ### Create a new Category
 > HTTP POST `/admin-categories/`  
-> Bearer `<admin_access_token>`
 
 Request:  
-> JSON `{"name": "Toys", "slug": "toys"}`
+> JSON `{"name": "Toys", "slug": "toys"}`  
 
 Response:  
-> JSON `{"id":5,"name":"Food","slug":"food"}`
+> JSON `{"id":5,"name":"Toys","slug":"toys"}`  
 
 Status codes:  
-- 201 Ok
+- 201 Created
 - 400 Bad Request
 - 401 Unauthorized
 - 403 Forbidden
