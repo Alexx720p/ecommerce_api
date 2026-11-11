@@ -25,6 +25,7 @@ The API provides user authentication, product catalog browsing, shopping cart ma
 - Update cart quantities
 - Remove products from cart
 - View current cart contents
+- Checkout
 
 ### Admin
 - Create products
@@ -52,30 +53,30 @@ This project follows a monolithic architecture where all functionality is contai
 
 ## Installation
 Clone the repository:  
-> bash: git clone https://github.com/Alexx720p/ecommerce_api
+```git clone https://github.com/Alexx720p/ecommerce_api```
 
 Navigate to the project directory:  
->bash: cd ecommerce_api
+```cd ecommerce_api```
 
 Create a virtual environment and activate it:  
-> bash: python -m venv venv_name
+```python -m venv venv_name```
 
 Install dependencies:  
-> bash: pip install -r requirements.txt
+```pip install -r requirements.txt```
 
 Apply migrations:  
-> bash: python manage.py migrate
+```python manage.py migrate```
 
 Run the server:  
-> bash: python manage.py runserver
+```python manage.py runserver```
 
 ### Environment variables
 Create a .env file in the project root with your Stripe API key:  
-`STRIPE_SECRET_KEY = 'your_actual_Stripe_key'`  
+`STRIPE_SECRET_KEY='your_actual_Stripe_key'`  
 
 # API Documentation
 ## Authentication
-Logout and delete requires authentication:  
+Logout and account deletion requires authentication:  
 > Bearer `<access_token>`   
 ### Register User  
 > HTTP `POST register/`  
@@ -142,15 +143,15 @@ Status codes:
 
 ## Products
 ### Search Products
-> HTTP `/products/?search=hat`
+> HTTP GET `/products/?search=hat`
 ### Get all products
-> HTTP `GET /products`
+> HTTP GET `/products`
 
 Response:  
 > JSON `{"count": 1, "next": "null", "previous": "null", "results": [{"id": 1, "title": "hat", "description": "Black hat for men", "price": 3.99, "Category": 1}]}`
 
 You can filter by Category too using the category's id:  
-> HTTP `/products/?Category=1`  
+> HTTP GET `/products/?Category=1`  
 
 Status codes:  
 - 200 OK
@@ -196,6 +197,22 @@ Response:
 Status codes:  
 - 200 OK
 - 401 Unauthorized
+
+### Checkout
+> POST `/checkout/`  
+
+*No JSON body required in the request*  
+
+Response:  
+> JSON `{"checkout_url": "Stripe_checkout_url"}`
+
+After a successfil payment, Stripe redirects the user to the configured success URL.  
+If the checkout process is cancelled, Stripe redirects the user to the configured cancel URL.  
+
+Status Codes:  
+- 200 OK
+- 401 Unauthorized
+- 400 Bad Request
 
 
 ## Admin
